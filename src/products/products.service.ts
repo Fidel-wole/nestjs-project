@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductInterface } from './product.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -21,17 +21,22 @@ export class ProductService {
 
   async getProducts() {
     try {
-      return this.productModel.find();
+      const products = this.productModel.find();
+      return products;
     } catch (err: any) {
       throw new Error(err.message);
     }
   }
   async getSingleProduct(prodId: any) {
+    let product;
     try {
-      const product = this.productModel.findById(prodId);
-      return product;
+      product = await this.productModel.findById(prodId);
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new NotFoundException('Product not found');
     }
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return product;
   }
 }
